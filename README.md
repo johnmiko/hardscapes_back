@@ -82,6 +82,16 @@ The API uses CORS middleware to allow requests from:
 - `http://localhost:3000` (alternative dev port)
 - Vercel deployments (`*.vercel.app`)
 
+## Deployment
+
+See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) for detailed instructions on deploying to Railway.
+
+Quick steps:
+1. Push code to GitHub
+2. Connect repository to Railway
+3. Railway will auto-detect Python and use the build configuration
+4. Add your Railway domain to CORS in `api.py`
+
 ## Data Source
 
 Add your CEFR word list to `data/cefr.csv` with columns:

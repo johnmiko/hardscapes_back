@@ -1,4 +1,6 @@
-# Python
+# Don't ignore the out/ directory on Railway (we need the database)
+# Railway will build it during deployment
+
 .venv/
 venv/
 __pycache__/
@@ -12,11 +14,6 @@ __pycache__/
 dist/
 build/
 
-# Data and output
-out/
-*.db
-*.csv
-
 # IDE
 .vscode/
 .idea/
@@ -27,9 +24,3 @@ out/
 # Environment
 .env
 .env.local
-
-# OS
-.DS_Store
-Thumbs.db
-initial_instructions.txt
-to do.txt
