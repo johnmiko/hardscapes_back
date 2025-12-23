@@ -1,6 +1,8 @@
 import sqlite3
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
 
 app = FastAPI(title="Hardscapes Word API", version="1.0.0")
 
@@ -18,6 +20,23 @@ app.add_middleware(
 )
 
 DB_PATH = "out/words.db"
+
+
+# Pydantic models for type-safe responses
+class WordRow(BaseModel):
+    word: str
+    zipf: float
+    cefr: str
+    is_easy: int
+    length: int
+    difficulty: float
+    level: int
+
+
+class PuzzleResponse(BaseModel):
+    letters: List[str]
+    words: List[WordRow]
+    level: int
 
 
 def q(sql: str, params=()):
@@ -78,3 +97,47 @@ def get_stats():
         }
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.get("/api/puzzle/{level}", response_model=PuzzleResponse)
+def get_puzzle(level: int):
+    """
+    Get a puzzle for a specific level.
+    
+    Returns puzzle data including words and unique letters.
+    
+    Args:
+        level: Game level (1-50)
+    
+    Returns:
+        PuzzleResponse with letters, words, and level
+    """
+    if level < 1 or level > 50:
+        raise HTTPException(status_code=400, detail="Level must be between 1 and 50")
+    
+    # Fetch words for this level
+    words_data = q(
+        """
+        SELECT word, zipf, cefr_norm as cefr, is_easy, length, difficulty, level
+        FROM words
+        WHERE level = ?
+        ORDER BY difficulty ASC, zipf DESC
+        LIMIT 100
+        """,
+        (level,),
+    )
+    
+    if not words_data:
+        raise HTTPException(status_code=404, detail=f"No words found for level {level}")
+    
+    # Extract unique letters from all words (sorted, uppercase)
+    all_letters = set()
+    for word_row in words_data:
+        all_letters.update(word_row["word"].upper())
+    
+    letters = sorted(list(all_letters))
+    
+    # Convert to WordRow objects
+    words = [WordRow(**word) for word in words_data]
+    
+    return PuzzleResponse(letters=letters, words=words, level=level)
