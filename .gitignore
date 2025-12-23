@@ -12,10 +12,11 @@ __pycache__/
 dist/
 build/
 
-# Data and output
+# Data and output (keep data/cefr.csv but ignore generated files)
 out/
 *.db
-*.csv
+out/*.csv
+words_ranked.csv
 
 # IDE
 .vscode/
